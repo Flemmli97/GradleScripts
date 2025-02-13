@@ -9,10 +9,6 @@ buildscript {
     }
 }
 
-plugins {
-    id 'com.github.johnrengelman.shadow'
-}
-
 apply plugin: com.modrinth.minotaur.Minotaur
 apply plugin: com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 apply plugin: com.matthewprenger.cursegradle.CurseGradlePlugin
