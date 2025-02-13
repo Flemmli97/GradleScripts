@@ -36,7 +36,7 @@ allprojects {
     
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
-        options.release = project.hasProperty('jvm') ? rootProject.jvm : 21
+        options.release = project.hasProperty('jvm') ? rootProject.jvm as Integer : 21
     }
 
     java {
