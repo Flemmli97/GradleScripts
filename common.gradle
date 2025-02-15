@@ -19,6 +19,12 @@ tasks.register('cleanLocalPublish') {
     publishToMavenLocal.mustRunAfter ':common:clean', clean
 }
 
+tasks.register('uploadAndPublish') {
+    group = 'publishing'
+    dependsOn clean, publish
+    publish.mustRunAfter clean
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
