@@ -16,7 +16,7 @@ processResources {
 tasks.register('cleanLocalPublish') {
     group = 'publishing'
     dependsOn ':common:clean', clean, publishToMavenLocal
-    build.mustRunAfter ':common:clean', clean
+    publishToMavenLocal.mustRunAfter ':common:clean', clean
 }
 
 publishing {

@@ -125,7 +125,7 @@ curseforge {
         }
     }
 }
-tasks.getByName('curseforge').mustRunAfter build
+tasks.getByName('curseforge').dependsOn build
 
 modrinth {
     token = findProperty('modrinthApiToken') ?: '0'
@@ -145,12 +145,12 @@ modrinth {
         }
     }
 }
-tasks.getByName('modrinth').mustRunAfter build
+tasks.getByName('modrinth').dependsOn build
 
 tasks.register('cleanLocalPublish') {
     group = 'publishing'
     dependsOn ':common:clean', clean, publishToMavenLocal
-    build.mustRunAfter ':common:clean', clean
+    publishToMavenLocal.mustRunAfter ':common:clean', clean
 }
 
 tasks.register('upload') {
@@ -166,6 +166,7 @@ tasks.register('upload') {
 tasks.register('uploadAndPublish') {
     group = 'publishing'
     dependsOn upload, publish
+    publish.mustRunAfter upload
 }
 
 publishing {
