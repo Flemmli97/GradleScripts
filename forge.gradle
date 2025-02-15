@@ -152,7 +152,7 @@ tasks.register('upload') {
     dependsOn 'curseforge', 'modrinth'
     build.mustRunAfter ':common:clean', clean
     doLast {
-        notifications.add('neoforge')
+        notifications.add('forge')
     }
 }
 
