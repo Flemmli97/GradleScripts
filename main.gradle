@@ -91,17 +91,17 @@ subprojects {
 
     publishing {
         repositories {
-            def maven = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')
-            if (maven) {
+            def token = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')
+            if (token) {
                 maven {
                     url 'https://maven.blazing-coop.net/releases'
                     credentials {
                         username = project.findProperty('maven.user') ?: System.getenv('BLAZING_COOP_MAVEN_USER')
-                        password = maven
+                        password = token
                     }
                 }
             }
-            def token = project.findProperty('gpr.gitlab.token') ?: System.getenv('GPR_GITLAB_TOKEN')
+            token = project.findProperty('gpr.gitlab.token') ?: System.getenv('GPR_GITLAB_TOKEN')
             if (token) {
                 maven {
                     url 'https://gitlab.com/api/v4/projects/21830712/packages/maven'
