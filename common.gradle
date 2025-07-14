@@ -13,6 +13,12 @@ processResources {
     exclude '.cache'
 }
 
+processResources {
+    filesMatching('pack.mcmeta') {
+        expand 'mod_name': project_name
+    }
+}
+
 tasks.register('cleanLocalPublish') {
     group = 'publishing'
     dependsOn ':common:clean', clean, publishToMavenLocal
