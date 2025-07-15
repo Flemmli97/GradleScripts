@@ -102,6 +102,12 @@ curseforge {
             changelog = txt
             changelogType = 'markdown'
             releaseType = 'release'
+            if (mod_version.contains("beta")) {
+                releaseType = 'beta'
+            }
+            if (mod_version.contains("alpha")) {
+                releaseType = 'alpha'
+            }
         }
         if (!"${project.curse_dep_fabric}".isEmpty() || project.hasProperty('optional_curse_dep_fabric')) {
             relations {
@@ -128,6 +134,12 @@ modrinth {
     versionName = remapJar.archiveFileName
     changelog = rootProject.changelog(1) + '\n\n' + "For past versions see: ${project.full_changelog}"
     versionType = 'release'
+    if (mod_version.contains("beta")) {
+        versionType = 'beta'
+    }
+    if (mod_version.contains("alpha")) {
+        versionType = 'alpha'
+    }
     uploadFile = remapJar
     gameVersions = "${project.modrinth_versions}".split(', ').toList()
     loaders = ['fabric']
