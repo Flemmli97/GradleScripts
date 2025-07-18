@@ -155,6 +155,11 @@ modrinth {
                 required.project "${it}"
             }
         }
+        if (!"${project.optional_modrinth_dep_forge}".isEmpty()) {
+            "${project.optional_modrinth_dep_forge}".split(', ').each {
+                optional.project "${it}"
+            }
+        }
     }
 }
 tasks.getByName('modrinth').dependsOn build
