@@ -149,7 +149,7 @@ modrinth {
                 required.project "${it}"
             }
         }
-        if (!"${project.optional_modrinth_dep_fabric}".isEmpty()) {
+        if (project.hasProperty('optional_modrinth_dep_fabric')) {
             "${project.optional_modrinth_dep_fabric}".split(', ').each {
                 optional.project "${it}"
             }

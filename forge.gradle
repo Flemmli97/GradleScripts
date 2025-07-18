@@ -148,7 +148,7 @@ modrinth {
                 required.project "${it}"
             }
         }
-        if (!"${project.optional_modrinth_dep_forge}".isEmpty()) {
+        if (project.hasProperty('optional_modrinth_dep_forge')) {
             "${project.optional_modrinth_dep_forge}".split(', ').each {
                 optional.project "${it}"
             }
