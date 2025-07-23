@@ -120,7 +120,7 @@ def changelog(int versions) {
         def changelog = ''
         def match = 0
         rootProject.file('Changelog.md').eachLine {
-            if (it.matches("${project.project_name} ([0-9]+)(\\.[A-z0-9]+)+"))
+            if (it.matches("${project.project_name} ([0-9]+)(.)+$"))
                 match++
             if (match <= versions) {
                 changelog += it + '\n'
@@ -138,14 +138,14 @@ def changelog(int versions) {
 def discordChangelog() {
     def changelog = changelog(1)
     def res = new ArrayList()
-    if (changelog.size() < 1024) {
+    if (changelog.size() < 1000) {
         res.add(changelog)
         return res
     }
     def temp = ''
     changelog.split('\n').each {
         it = it + '\n'
-        if ((temp.size() + it.size()) >= 1024) {
+        if ((temp.size() + it.size()) >= 1000) {
             res.add(temp)
             temp = it
         } else {
@@ -204,7 +204,7 @@ def discordNotif(List<String> loaders) {
 
         webhook.sendMessage(message)
     } catch (IOException e) {
-        println 'Failed to push to the Discord webhook.'
+        println 'Failed to push to the Discord webhook. ' + e
     }
 }
 
