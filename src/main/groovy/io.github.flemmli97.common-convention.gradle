@@ -1,0 +1,101 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+archivesBaseName = mod_id
+version = minecraft_version + '-' + mod_version
+group = maven_group
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = project.hasProperty('jvm') ? jvm as Integer : 21
+}
+
+java {
+    withSourcesJar()
+}
+
+base {
+    version = "$version-$name"
+}
+
+ext {
+    mod_meta = [
+            'mod_name'         : project_name,
+            'mod_author'       : mod_author,
+            'version'          : version,
+            'mcversion'        : minecraft_version,
+            'homepage_fabric'  : curse_page_fabric,
+            'fabric_version'   : fabric_version,
+            'loader_version'   : neo_loader_version,
+            'homepage_neoforge': curse_page_forge,
+            'neoforge_version' : neoforge_version
+    ]
+}
+
+repositories {
+    maven {
+        url = 'https://maven.parchmentmc.org'
+    }
+}
+
+sourcesJar {
+    var license = rootProject.file('LICENSE');
+    if (license.exists()) {
+        from(rootProject.file('LICENSE'))
+    }
+}
+
+jar {
+    var license = rootProject.file('LICENSE');
+    if (license.exists()) {
+        from(rootProject.file('LICENSE'))
+    }
+
+    manifest {
+        attributes([
+                'Specification-Title'   : mod_meta.mod_name,
+                'Specification-Vendor'  : mod_meta.mod_author,
+                'Specification-Version' : project.jar.archiveVersion,
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.jar.archiveVersion,
+                'Implementation-Vendor' : mod_meta.mod_author,
+                'Built-On-Minecraft'    : minecraft_version,
+        ])
+    }
+}
+
+processResources {
+    inputs.property 'version', version
+
+    filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand mod_meta
+    }
+    exclude '.cache'
+}
+
+publishing {
+    repositories {
+        def token = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')
+        if (token) {
+            maven {
+                url 'https://maven.blazing-coop.net/releases'
+                credentials {
+                    username = project.findProperty('maven.user') ?: System.getenv('BLAZING_COOP_MAVEN_USER')
+                    password = token
+                }
+            }
+        }
+        token = project.findProperty('gpr.gitlab.token') ?: System.getenv('GPR_GITLAB_TOKEN')
+        if (token) {
+            maven {
+                url 'https://gitlab.com/api/v4/projects/21830712/packages/maven'
+                credentials {
+                    username = project.findProperty('gpr.user') ?: System.getenv('GPR_USER')
+                    password = token
+                }
+            }
+        }
+    }
+}

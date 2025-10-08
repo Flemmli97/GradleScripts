@@ -1,83 +1,12 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath group: 'com.diluv.schoomp', name: 'Schoomp', version: '1.1.0+'
-    }
+plugins {
+    id 'io.github.flemmli97.changelog'
 }
 
 import com.diluv.schoomp.Webhook
 import com.diluv.schoomp.message.Message
 import com.diluv.schoomp.message.embed.Embed
 
-architectury {
-    minecraft = rootProject.minecraft_version
-}
-
-ext {
-    notifications = []
-    changelog = this.&changelog
-}
-
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'architectury-plugin'
-    apply plugin: 'maven-publish'
-
-    archivesBaseName = rootProject.archives_base_name
-    version = project.minecraft_version + '-' + rootProject.mod_version
-    group = rootProject.maven_group
-
-    architectury {
-        compileOnly()
-    }
-    
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-        options.release = project.hasProperty('jvm') ? rootProject.jvm as Integer : 21
-    }
-
-    java {
-        withSourcesJar()
-    }
-}
-
 subprojects {
-    apply plugin: 'dev.architectury.loom'
-
-    base {
-        version = "$rootProject.version-$project.name"
-    }
-
-    loom {
-        silentMojangMappingsLicense()
-    }
-
-    if (project.path != ':common') {
-        loom {
-            mods {
-                main {
-                    sourceSet project.sourceSets.main
-                    sourceSet project(':common').sourceSets.main
-                }
-            }
-        }
-    }
-
-    repositories {
-        maven { url = 'https://maven.parchmentmc.org' }
-    }
-
-    dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-        mappings loom.layered() {
-            officialMojangMappings()
-            parchment("org.parchmentmc.data:parchment-${rootProject.parchment_version}@zip")
-        }
-    }
-
     afterEvaluate {
         def uploadTask = project.tasks.findByName('upload')
         if (uploadTask != null) {
@@ -87,50 +16,6 @@ subprojects {
         if (publishTask != null) {
             publishTask.finalizedBy discordNotification
         }
-    }
-
-    publishing {
-        repositories {
-            def token = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')
-            if (token) {
-                maven {
-                    url 'https://maven.blazing-coop.net/releases'
-                    credentials {
-                        username = project.findProperty('maven.user') ?: System.getenv('BLAZING_COOP_MAVEN_USER')
-                        password = token
-                    }
-                }
-            }
-            token = project.findProperty('gpr.gitlab.token') ?: System.getenv('GPR_GITLAB_TOKEN')
-            if (token) {
-                maven {
-                    url 'https://gitlab.com/api/v4/projects/21830712/packages/maven'
-                    credentials {
-                        username = project.findProperty('gpr.user') ?: System.getenv('GPR_USER')
-                        password = token
-                    }
-                }
-            }
-        }
-    }
-}
-
-def changelog(int versions) {
-    try {
-        def changelog = ''
-        def match = 0
-        rootProject.file('Changelog.md').eachLine {
-            if (it.matches("${project.project_name} ([0-9]+)([-.A-z0-9])+\$"))
-                match++
-            if (match <= versions) {
-                changelog += it + '\n'
-            } else {
-                return
-            }
-        }
-        return changelog + '\n\n'
-    } catch (exception) {
-        return "${project.project_name} ${project.mod_version}\n==========\nThere was an error generating the changelog"
     }
 }
 
@@ -193,8 +78,7 @@ def discordNotif(List<String> loaders) {
         def changelog = discordChangelog()
         if (changelog.size() == 1) {
             embed.addField('Change Log', "```md\n${changelog.get(0) ?: 'Unavailable :('}```", false)
-        }
-        else {
+        } else {
             changelog.forEach {
                 embed.addField('Change Log', "```md\n${it}```", false)
             }

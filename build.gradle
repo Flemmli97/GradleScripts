@@ -1,0 +1,42 @@
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'maven-publish'
+}
+
+archivesBaseName = rootProject.name
+version = '1.0.0'
+group = "io.github.flemmli97"
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.diluv.schoomp:Schoomp:1.2.6'
+}
+
+publishing {
+    repositories {
+        def token = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')
+        if (token) {
+            maven {
+                url 'https://maven.blazing-coop.net/releases'
+                credentials {
+                    username = project.findProperty('maven.user') ?: System.getenv('BLAZING_COOP_MAVEN_USER')
+                    password = token
+                }
+            }
+        }
+        token = project.findProperty('gpr.gitlab.token') ?: System.getenv('GPR_GITLAB_TOKEN')
+        if (token) {
+            maven {
+                url 'https://gitlab.com/api/v4/projects/21830712/packages/maven'
+                credentials {
+                    username = project.findProperty('gpr.user') ?: System.getenv('GPR_USER')
+                    password = token
+                }
+            }
+        }
+    }
+}

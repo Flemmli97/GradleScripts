@@ -1,0 +1,60 @@
+plugins {
+    id 'net.neoforged.moddev'
+    id 'io.github.flemmli97.common-convention'
+}
+
+neoForge {
+    neoFormVersion = neoForm_version
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    validateAccessTransformers = true
+}
+
+configurations {
+    // Use this configuration if the dependency is only required in common
+    commonDependency {
+        canBeResolved = true
+    }
+    compileClasspath.extendsFrom commonDependency
+}
+
+dependencies {
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.7'
+    compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.5.0'
+    annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.5.0'
+}
+
+processResources {
+    exclude '.cache'
+    filesMatching('pack.mcmeta') {
+        expand 'mod_name': project_name
+    }
+}
+
+tasks.register('cleanLocalPublish') {
+    group = 'publishing'
+    dependsOn ':common:clean', clean, publishToMavenLocal
+    publishToMavenLocal.mustRunAfter ':common:clean', clean
+}
+
+tasks.register('uploadAndPublish') {
+    group = 'publishing'
+    dependsOn clean, publish
+    publish.mustRunAfter clean
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact(jar)
+            artifact(sourcesJar)
+            artifactId project.mod_id
+        }
+    }
+}

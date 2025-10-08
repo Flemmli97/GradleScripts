@@ -1,0 +1,23 @@
+ext {
+    notifications = []
+    changelog = this.&changelog_internal
+}
+
+def changelog_internal(int versions) {
+    try {
+        def changelog = ''
+        def match = 0
+        rootProject.file('Changelog.md').eachLine {
+            if (it.matches("${project.project_name} ([0-9]+)([-.A-z0-9])+\$"))
+                match++
+            if (match <= versions) {
+                changelog += it + '\n'
+            } else {
+                return
+            }
+        }
+        return changelog + '\n\n'
+    } catch (exception) {
+        return "${project.project_name} ${project.mod_version}\n==========\nThere was an error generating the changelog: ${exception}"
+    }
+}
