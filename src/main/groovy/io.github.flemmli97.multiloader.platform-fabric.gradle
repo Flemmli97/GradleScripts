@@ -1,6 +1,6 @@
 plugins {
-    id 'io.github.flemmli97.changelog'
-    id 'io.github.flemmli97.common-convention'
+    id 'io.github.flemmli97.multiloader.changelog'
+    id 'io.github.flemmli97.multiloader.common-convention'
 }
 
 loom {

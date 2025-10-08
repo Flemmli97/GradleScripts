@@ -1,5 +1,5 @@
 plugins {
-    id 'io.github.flemmli97.changelog'
+    id 'io.github.flemmli97.multiloader.changelog'
 }
 
 import com.diluv.schoomp.Webhook
