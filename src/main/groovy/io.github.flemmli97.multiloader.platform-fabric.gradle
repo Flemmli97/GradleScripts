@@ -139,7 +139,9 @@ if (hasCurseforge || hasModrinth) {
             dependsOn 'modrinth'
         }
         doLast {
-            notifications.add('fabric')
+            if (project.hasProperty("notifications")) {
+                notifications.add('fabric')
+            }
         }
     }
 

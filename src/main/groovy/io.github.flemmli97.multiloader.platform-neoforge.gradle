@@ -142,7 +142,9 @@ if (hasCurseforge || hasModrinth) {
         dependsOn 'curseforge', 'modrinth'
         build.mustRunAfter ':common:clean', clean
         doLast {
-            notifications.add('neoforge')
+            if (project.hasProperty("notifications")) {
+                notifications.add('neoforge')
+            }
         }
     }
 

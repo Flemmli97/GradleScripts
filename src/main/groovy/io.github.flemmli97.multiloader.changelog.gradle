@@ -1,5 +1,4 @@
 ext {
-    notifications = []
     changelog = this.&changelog_internal
 }
 
