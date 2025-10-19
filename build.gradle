@@ -4,8 +4,8 @@ plugins {
 }
 
 archivesBaseName = rootProject.name
-version = '1.0.0'
-group = "io.github.flemmli97.multiloader"
+version = plugin_version
+group = maven_group
 
 repositories {
     gradlePluginPortal()
@@ -14,6 +14,21 @@ repositories {
 
 dependencies {
     implementation 'com.diluv.schoomp:Schoomp:1.2.6'
+}
+
+processResources {
+    filesMatching('multiloader.properties') {
+        expand 'version': version
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': version
+        ])
+    }
 }
 
 publishing {

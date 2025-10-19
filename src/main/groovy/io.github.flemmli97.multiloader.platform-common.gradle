@@ -3,6 +3,10 @@ plugins {
     id 'io.github.flemmli97.multiloader.common-convention'
 }
 
+Properties props = new Properties()
+props.load(getClass().getResourceAsStream("multiloader.properties"))
+println("Applying Multiloader plugin - version ${props.get('version')}")
+
 neoForge {
     neoFormVersion = neoForm_version
     def at = file('src/main/resources/META-INF/accesstransformer.cfg')
