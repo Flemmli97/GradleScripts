@@ -135,6 +135,12 @@ tasks.register('cleanLocalPublish') {
     publishToMavenLocal.mustRunAfter ':common:clean', clean
 }
 
+tasks.register('cleanPublish') {
+    group = 'publishing'
+    dependsOn ':common:clean', clean, publish
+    publish.mustRunAfter ':common:clean', clean
+}
+
 if (hasCurseforge || hasModrinth) {
     tasks.register('upload') {
         group = 'publishing'

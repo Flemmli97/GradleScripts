@@ -43,14 +43,22 @@ processResources {
 
 tasks.register('cleanLocalPublish') {
     group = 'publishing'
-    dependsOn ':common:clean', clean, publishToMavenLocal
-    publishToMavenLocal.mustRunAfter ':common:clean', clean
+    dependsOn clean, publishToMavenLocal
+    publishToMavenLocal.mustRunAfter clean
 }
 
-tasks.register('uploadAndPublish') {
+tasks.register('cleanPublish') {
     group = 'publishing'
     dependsOn clean, publish
     publish.mustRunAfter clean
+}
+
+if ((findProperty('with_publish') ?: 'true').toBoolean()) {
+    tasks.register('uploadAndPublish') {
+        group = 'publishing'
+        dependsOn clean, publish
+        publish.mustRunAfter clean
+    }
 }
 
 publishing {
