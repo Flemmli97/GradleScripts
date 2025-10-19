@@ -26,10 +26,10 @@ ext {
             'mod_author'       : mod_author,
             'version'          : version,
             'mcversion'        : minecraft_version,
-            'homepage_fabric'  : curse_page_fabric,
+            'homepage_fabric'  : findProperty('curse_page_fabric') ?: '',
             'fabric_version'   : fabric_version,
             'loader_version'   : neo_loader_version,
-            'homepage_neoforge': curse_page_forge,
+            'homepage_neoforge': findProperty('curse_page_forge') ?: '',
             'neoforge_version' : neoforge_version
     ]
 }
