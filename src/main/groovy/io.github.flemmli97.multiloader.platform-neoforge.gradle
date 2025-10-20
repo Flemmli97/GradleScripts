@@ -38,6 +38,7 @@ neoForge {
 dependencies {
     compileOnly(project(':common'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
+    compileOnly(project(path: ':common', configuration: 'loomRemapped'))
 }
 
 processResources {

@@ -26,6 +26,10 @@ configurations {
         canBeResolved = true
     }
     compileClasspath.extendsFrom commonDependency
+    loomRemapped {
+        canBeConsumed = true
+    }
+    compileClasspath.extendsFrom loomRemapped
 }
 
 dependencies {

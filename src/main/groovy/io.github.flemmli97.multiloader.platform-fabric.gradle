@@ -19,6 +19,12 @@ loom {
     }
 }
 
+configurations {
+    remapCommon {
+        canBeConsumed = true
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered {
@@ -29,6 +35,15 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     compileOnly(project(':common'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
+}
+
+afterEvaluate {
+    configurations.named("compileClasspath").get().resolvedConfiguration.resolvedArtifacts.stream()
+            .filter {art->
+                configurations.named("remapCommon").get().incoming.dependencies.any {
+                    art.moduleVersion.id.group.contains(it.group) && it.name == art.moduleVersion.id.name && it.version == art.moduleVersion.id.version
+                }
+            }.each { project(":common").dependencies.add("loomRemapped", files(it.file)) }
 }
 
 processResources {
