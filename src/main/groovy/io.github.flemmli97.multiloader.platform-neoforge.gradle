@@ -35,22 +35,38 @@ neoForge {
     }
 }
 
+configurations {
+    commonJava {
+        canBeResolved = true
+    }
+    commonResources {
+        canBeResolved = true
+    }
+}
+
 dependencies {
     compileOnly(project(':common'))
+    commonJava(project(path:':common', configuration: 'commonJava'))
+    commonResources(project(path:':common', configuration: 'commonResources'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
     compileOnly(project(path: ':common', configuration: 'loomRemapped'))
 }
 
 processResources {
-    from(project(":common").sourceSets.main.resources)
+    dependsOn(configurations.named("commonResources"))
+    from(configurations.named("commonResources"))
 }
 
 tasks.named('compileJava', JavaCompile) {
-    source(project(":common").sourceSets.main.allSource)
+    dependsOn(configurations.named("commonJava"))
+    source(configurations.named("commonJava"))
 }
 
 tasks.named('sourcesJar', Jar) {
-    from(project(":common").sourceSets.main.allSource)
+    dependsOn(configurations.named("commonJava"))
+    dependsOn(configurations.named("commonResources"))
+    from(configurations.named("commonJava"))
+    from(configurations.named("commonResources"))
     exclude '.cache'
 }
 

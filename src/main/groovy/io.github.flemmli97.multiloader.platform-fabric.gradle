@@ -20,6 +20,12 @@ loom {
 }
 
 configurations {
+    commonJava {
+        canBeResolved = true
+    }
+    commonResources {
+        canBeResolved = true
+    }
     remapCommon {
         canBeConsumed = true
     }
@@ -33,7 +39,10 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+
     compileOnly(project(':common'))
+    commonJava(project(path:':common', configuration: 'commonJava'))
+    commonResources(project(path:':common', configuration: 'commonResources'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
 }
 
@@ -47,16 +56,21 @@ afterEvaluate {
 }
 
 processResources {
-    from(project(":common").sourceSets.main.resources)
+    dependsOn(configurations.named("commonResources"))
+    from(configurations.named("commonResources"))
     exclude '**/accesstransformer.cfg'
 }
 
 tasks.named('compileJava', JavaCompile) {
-    source(project(":common").sourceSets.main.allSource)
+    dependsOn(configurations.named("commonJava"))
+    source(configurations.named("commonJava"))
 }
 
 tasks.named('sourcesJar', Jar) {
-    from(project(":common").sourceSets.main.allSource)
+    dependsOn(configurations.named("commonJava"))
+    dependsOn(configurations.named("commonResources"))
+    from(configurations.named("commonJava"))
+    from(configurations.named("commonResources"))
     exclude '.cache'
 }
 
