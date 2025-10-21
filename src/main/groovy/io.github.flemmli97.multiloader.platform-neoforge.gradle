@@ -44,10 +44,20 @@ configurations {
     }
 }
 
+repositories {
+    maven {
+        name = 'Fabric'
+        url = uri('https://maven.fabricmc.net')
+        content {
+            includeGroupByRegex('net.fabricmc')
+        }
+    }
+}
+
 dependencies {
     compileOnly(project(':common'))
-    commonJava(project(path:':common', configuration: 'commonJava'))
-    commonResources(project(path:':common', configuration: 'commonResources'))
+    commonJava(project(path: ':common', configuration: 'commonJava'))
+    commonResources(project(path: ':common', configuration: 'commonResources'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
     compileOnly(project(path: ':common', configuration: 'loomRemapped'))
 }
