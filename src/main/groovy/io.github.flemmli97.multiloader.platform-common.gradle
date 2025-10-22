@@ -26,10 +26,6 @@ configurations {
         canBeResolved = true
     }
     compileClasspath.extendsFrom commonDependency
-    loomRemapped {
-        canBeConsumed = true
-    }
-    compileClasspath.extendsFrom loomRemapped
 }
 
 repositories {
@@ -49,6 +45,7 @@ dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.7'
     compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.5.0'
     annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.5.0'
+    compileOnly(project(path: ':fabric', configuration: 'remapCommonArtifact'))
 }
 
 processResources {
