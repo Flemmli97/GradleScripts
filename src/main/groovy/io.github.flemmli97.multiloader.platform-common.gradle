@@ -21,14 +21,6 @@ neoForge {
 }
 
 configurations {
-    commonJava {
-        canBeResolved = false
-        canBeConsumed = true
-    }
-    commonResources {
-        canBeResolved = false
-        canBeConsumed = true
-    }
     // Use this configuration if the dependency is only required in common
     commonDependency {
         canBeResolved = true
@@ -53,6 +45,7 @@ repositories {
 dependencies {
     // This is only here for the EnvType annotation which can be present with fabric dependencies
     commonDependency "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    compileOnly("org.ow2.asm:asm-tree:9.6")
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.7'
     compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.5.0'
     annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.5.0'
@@ -63,11 +56,6 @@ processResources {
     filesMatching('pack.mcmeta') {
         expand 'mod_name': project_name
     }
-}
-
-artifacts {
-    add("commonJava", sourceSets.main.java.sourceDirectories.singleFile)
-    add("commonResources", sourceSets.main.resources.sourceDirectories.singleFile)
 }
 
 tasks.register('cleanLocalPublish') {

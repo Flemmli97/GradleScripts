@@ -8,6 +8,9 @@ loom {
     if (aw.exists()) {
         accessWidenerPath.set(aw)
     }
+    mixin {
+        useLegacyMixinAp = false
+    }
     runs {
         client {
             client()
@@ -20,12 +23,6 @@ loom {
 }
 
 configurations {
-    commonJava {
-        canBeResolved = true
-    }
-    commonResources {
-        canBeResolved = true
-    }
     remapCommon {
         canBeConsumed = true
     }
@@ -39,10 +36,7 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-
     compileOnly(project(':common'))
-    commonJava(project(path: ':common', configuration: 'commonJava'))
-    commonResources(project(path: ':common', configuration: 'commonResources'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
 }
 
@@ -56,21 +50,16 @@ afterEvaluate {
 }
 
 processResources {
-    dependsOn(configurations.named("commonResources"))
-    from(configurations.named("commonResources"))
+    from(project(":common").sourceSets.main.resources)
     exclude '**/accesstransformer.cfg'
 }
 
 tasks.named('compileJava', JavaCompile) {
-    dependsOn(configurations.named("commonJava"))
-    source(configurations.named("commonJava"))
+    source(project(":common").sourceSets.main.allSource)
 }
 
 tasks.named('sourcesJar', Jar) {
-    dependsOn(configurations.named("commonJava"))
-    dependsOn(configurations.named("commonResources"))
-    from(configurations.named("commonJava"))
-    from(configurations.named("commonResources"))
+    from(project(":common").sourceSets.main.allSource)
     exclude '.cache'
 }
 

@@ -35,15 +35,6 @@ neoForge {
     }
 }
 
-configurations {
-    commonJava {
-        canBeResolved = true
-    }
-    commonResources {
-        canBeResolved = true
-    }
-}
-
 repositories {
     maven {
         name = 'Fabric'
@@ -56,27 +47,20 @@ repositories {
 
 dependencies {
     compileOnly(project(':common'))
-    commonJava(project(path: ':common', configuration: 'commonJava'))
-    commonResources(project(path: ':common', configuration: 'commonResources'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
     compileOnly(project(path: ':common', configuration: 'loomRemapped'))
 }
 
 processResources {
-    dependsOn(configurations.named("commonResources"))
-    from(configurations.named("commonResources"))
+    from(project(":common").sourceSets.main.resources)
 }
 
 tasks.named('compileJava', JavaCompile) {
-    dependsOn(configurations.named("commonJava"))
-    source(configurations.named("commonJava"))
+    source(project(":common").sourceSets.main.allSource)
 }
 
 tasks.named('sourcesJar', Jar) {
-    dependsOn(configurations.named("commonJava"))
-    dependsOn(configurations.named("commonResources"))
-    from(configurations.named("commonJava"))
-    from(configurations.named("commonResources"))
+    from(project(":common").sourceSets.main.allSource)
     exclude '.cache'
 }
 
