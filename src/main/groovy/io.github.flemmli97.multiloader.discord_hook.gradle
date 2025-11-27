@@ -47,6 +47,9 @@ def discordChangelog() {
 
 def discordNotif(List<String> loaders) {
     print("Sending notifications for loaders ${loaders}")
+    if (loaders.isEmpty()) {
+        return
+    }
     try {
         def webhook = new Webhook(findProperty('discordHook'), "${project.project_name} Upload")
 
