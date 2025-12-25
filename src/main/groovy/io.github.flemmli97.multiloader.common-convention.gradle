@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-archivesBaseName = mod_id
+base.archivesName = mod_id
 version = minecraft_version + '-' + mod_version
 group = maven_group
 
@@ -36,7 +36,11 @@ ext {
 
 repositories {
     maven {
+        name = "Parchment MC"
         url = 'https://maven.parchmentmc.org'
+        content {
+            includeGroupAndSubgroups('org.parchmentmc')
+        }
     }
 }
 
@@ -80,7 +84,7 @@ publishing {
         def token = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')
         if (token) {
             maven {
-                url 'https://maven.blazing-coop.net/releases'
+                url = 'https://maven.blazing-coop.net/releases'
                 credentials {
                     username = project.findProperty('maven.user') ?: System.getenv('BLAZING_COOP_MAVEN_USER')
                     password = token
@@ -90,7 +94,7 @@ publishing {
         token = project.findProperty('gpr.gitlab.token') ?: System.getenv('GPR_GITLAB_TOKEN')
         if (token) {
             maven {
-                url 'https://gitlab.com/api/v4/projects/21830712/packages/maven'
+                url = 'https://gitlab.com/api/v4/projects/21830712/packages/maven'
                 credentials {
                     username = project.findProperty('gpr.user') ?: System.getenv('GPR_USER')
                     password = token

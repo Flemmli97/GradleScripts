@@ -177,7 +177,7 @@ publishing {
         mavenJava(MavenPublication) {
             artifact(jar)
             artifact(sourcesJar)
-            artifactId mod_id
+            artifactId = project.mod_id
         }
     }
 }

@@ -23,6 +23,7 @@ loom {
 }
 
 configurations {
+    // Configuration that allows using intermediary mapped mods in common
     remapCommon {
         canBeConsumed = true
     }
@@ -43,12 +44,15 @@ dependencies {
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
 }
 
+// Fetches remapped artifacts and adds them to the common dependencies
 afterEvaluate {
     artifacts {
         configurations.named("compileClasspath").get().resolvedConfiguration.resolvedArtifacts.stream()
                 .filter { artifact ->
                     configurations.named("remapCommon").get().incoming.dependencies.any {
-                        artifact.moduleVersion.id.group.contains(it.group) && it.name == artifact.moduleVersion.id.name && it.version == artifact.moduleVersion.id.version
+                        artifact.moduleVersion.id.group.contains(it.group)
+                                && artifact.moduleVersion.id.name.startsWith(it.name)
+                                && artifact.moduleVersion.id.version == it.version
                     }
                 }.each { add("remapCommonArtifact", it.file) }
     }
@@ -186,7 +190,7 @@ publishing {
         mavenJava(MavenPublication) {
             artifact(remapJar)
             artifact(sourcesJar)
-            artifactId mod_id
+            artifactId = project.mod_id
         }
     }
 }
