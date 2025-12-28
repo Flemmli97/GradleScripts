@@ -82,7 +82,7 @@ if (hasCurseforge) {
                 addGameVersion "${it}"
             }
             addGameVersion 'Fabric'
-            mainArtifact(remapJar) {
+            mainArtifact(remapJar.archiveFile) {
                 def txt = changelog(1).replace('\n-', '\n\n- ')
                 txt = txt + '\n\n' + "For past versions see: ${full_changelog}"
                 changelog = txt
