@@ -95,12 +95,12 @@ configurations {
         extendsFrom implementation
         // Copy additional data from runtimeElements
         attributes {
-            configurations.runtimeElements.attributes.keySet().each { att->
+            configurations.runtimeElements.attributes.keySet().each { att ->
                 it.attribute(att, configurations.runtimeElements.attributes.getAttribute(att))
             }
         }
         outgoing {
-            configurations.runtimeElements.outgoing.artifacts.configureEach {art ->
+            configurations.runtimeElements.outgoing.artifacts.configureEach { art ->
                 it.artifact(art)
             }
         }

@@ -177,6 +177,7 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             artifactId = project.mod_id
+            suppressPomMetadataWarningsFor('runtimeElements')
         }
     }
 }

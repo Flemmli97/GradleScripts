@@ -34,6 +34,12 @@ configurations {
     requiredRuntime {
         extendsFrom modApi
         extendsFrom modImplementation
+        outgoing {
+            // Remove the unmapped dev jar from artifacts
+            it.artifacts.removeIf {
+                return it.classifier == "dev"
+            }
+        }
     }
 }
 
@@ -195,6 +201,7 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             artifactId = project.mod_id
+            suppressPomMetadataWarningsFor('runtimeElements')
         }
     }
 }
