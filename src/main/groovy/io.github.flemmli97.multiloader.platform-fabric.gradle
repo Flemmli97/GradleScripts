@@ -30,6 +30,11 @@ configurations {
     remapCommonArtifact {
         canBeConsumed = true
     }
+    // Add fabric configurations
+    requiredRuntime {
+        extendsFrom modApi
+        extendsFrom modImplementation
+    }
 }
 
 dependencies {
@@ -188,8 +193,7 @@ if (hasCurseforge || hasModrinth) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact(remapJar)
-            artifact(sourcesJar)
+            from components.java
             artifactId = project.mod_id
         }
     }

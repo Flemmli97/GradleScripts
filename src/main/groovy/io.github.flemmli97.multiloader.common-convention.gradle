@@ -79,6 +79,44 @@ processResources {
     exclude '.cache'
 }
 
+// By default runtimeElements contain both apiElements (from api dependency and runtimeElements (from runtimeOnly dependency)
+// This snippet instead makes it so (under the assumption that runtimeOnly dependencies are optional)
+// only required runtime dependency (from api and implementation) are exposed to the consumer
+// Users can still access the complete dependency by requiring the full capability as seen below
+configurations {
+    runtimeElements {
+        // Make the default elements require a capability
+        outgoing {
+            capability("${group}:${mod_id}-full:${version}")
+        }
+    }
+    requiredRuntime {
+        extendsFrom api
+        extendsFrom implementation
+        // Copy additional data from runtimeElements
+        attributes {
+            configurations.runtimeElements.attributes.keySet().each { att->
+                it.attribute(att, configurations.runtimeElements.attributes.getAttribute(att))
+            }
+        }
+        outgoing {
+            configurations.runtimeElements.outgoing.artifacts.configureEach {art ->
+                it.artifact(art)
+            }
+        }
+    }
+}
+
+AdhocComponentWithVariants javaComponent = (AdhocComponentWithVariants) components.java
+// Make runtimeElements be optional by default
+javaComponent.withVariantsFromConfiguration(configurations.runtimeElements, {
+    mapToOptional()
+})
+javaComponent.addVariantsFromConfiguration(configurations.requiredRuntime, {
+    mapToMavenScope("runtime")
+})
+// ==========
+
 publishing {
     repositories {
         def token = project.findProperty('maven.token') ?: System.getenv('BLAZING_COOP_MAVEN_TOKEN')

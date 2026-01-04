@@ -175,8 +175,7 @@ if (hasCurseforge || hasModrinth) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact(jar)
-            artifact(sourcesJar)
+            from components.java
             artifactId = project.mod_id
         }
     }
