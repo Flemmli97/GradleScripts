@@ -48,13 +48,6 @@ dependencies {
     compileOnly(project(path: ':fabric', configuration: 'remapCommonArtifact'))
 }
 
-processResources {
-    exclude '.cache'
-    filesMatching('pack.mcmeta') {
-        expand 'mod_name': project_name
-    }
-}
-
 tasks.register('cleanLocalPublish') {
     group = 'publishing'
     dependsOn clean, publishToMavenLocal

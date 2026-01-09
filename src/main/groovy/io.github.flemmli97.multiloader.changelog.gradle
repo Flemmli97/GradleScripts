@@ -7,7 +7,7 @@ def changelog_internal(int versions) {
         def changelog = ''
         def match = 0
         rootProject.file('Changelog.md').eachLine {
-            if (it.matches("${project.project_name} ([0-9]+)([-.A-z0-9])+\$"))
+            if (it.matches("${findProperty('mod_name') ?: project.project_name} ([0-9]+)([-.A-z0-9])+\$"))
                 match++
             if (match <= versions) {
                 changelog += it + '\n'
@@ -17,6 +17,6 @@ def changelog_internal(int versions) {
         }
         return changelog + '\n\n'
     } catch (exception) {
-        return "${project.project_name} ${project.mod_version}\n==========\nThere was an error generating the changelog: ${exception}"
+        return "${findProperty('mod_name') ?: project.project_name} ${project.mod_version}\n==========\nThere was an error generating the changelog: ${exception}"
     }
 }

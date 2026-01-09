@@ -50,7 +50,7 @@ dependencies {
         parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modApi "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${propertyWithFallback("fabric_api_version", "fabric_version")}"
     compileOnly(project(':common'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
 }
@@ -83,13 +83,17 @@ tasks.named('sourcesJar', Jar) {
     exclude '.cache'
 }
 
+def propertyWithFallback(String name, String fallback) {
+    return project.hasProperty(name) ? project."${name}" : project."${fallback}"
+}
+
 var hasCurseforge = tasks.findByName("curseforge") != null
 if (hasCurseforge) {
     curseforge {
         apiKey = findProperty('curseApiToken') ?: '0'
         project {
-            id = "${curse_id_fabric}"
-            "${curse_versions}".split(', ').each {
+            id = "${propertyWithFallback("curseforge_id", "curse_id_fabric")}"
+            "${propertyWithFallback("curseforge_versions", "curse_versions")}".split(', ').each {
                 addGameVersion "${it}"
             }
             addGameVersion 'Fabric'
@@ -106,11 +110,17 @@ if (hasCurseforge) {
                     releaseType = 'alpha'
                 }
             }
-            if (!"${curse_dep_fabric}".isEmpty() || project.hasProperty('optional_curse_dep_fabric')) {
+            var dependencies = propertyWithFallback('curseforge_dep_fabric', 'curse_dep_fabric')
+            if (!"${dependencies}".isEmpty() || project.hasProperty('optional_curseforge_dep_fabric') || project.hasProperty('optional_curse_dep_fabric')) {
                 relations {
-                    if (!"${curse_dep_fabric}".isEmpty()) {
-                        "${curse_dep_fabric}".split(', ').each {
+                    if (!"${dependencies}".isEmpty()) {
+                        "${dependencies}".split(', ').each {
                             requiredDependency "${it}"
+                        }
+                    }
+                    if (project.hasProperty('optional_curseforge_dep_fabric')) {
+                        "${optional_curseforge_dep_fabric}".split(', ').each {
+                            optionalDependency "${it}"
                         }
                     }
                     if (project.hasProperty('optional_curse_dep_fabric')) {

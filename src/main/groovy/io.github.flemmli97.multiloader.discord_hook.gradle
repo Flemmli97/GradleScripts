@@ -45,18 +45,22 @@ def discordChangelog() {
     return res
 }
 
+def propertyWithFallback(String name, String fallback) {
+    return project.hasProperty(name) ? project."${name}" : project."${fallback}"
+}
+
 def discordNotif(List<String> loaders) {
     print("Sending notifications for loaders ${loaders}")
     if (loaders.isEmpty()) {
         return
     }
     try {
-        def webhook = new Webhook(findProperty('discordHook'), "${project.project_name} Upload")
+        def webhook = new Webhook(findProperty('discordHook'), "${propertyWithFallback('mod_name', 'project_name')} Upload")
 
         def message = new Message()
-        def version = project.curse_versions.split(', ')[0]
+        def version = propertyWithFallback('curseforge_versions', 'curse_versions').split(', ')[0]
         message.setUsername('Curseforge Release')
-        def content = "${project.project_name} ${project.mod_version} for Minecraft ${version} has been released!"
+        def content = "${propertyWithFallback('mod_name', 'project_name')} ${project.mod_version} for Minecraft ${version} has been released!"
         if (project.hasProperty('discord_role')) {
             content = "<@&${project.discord_role}> " + content
         }
@@ -66,22 +70,22 @@ def discordNotif(List<String> loaders) {
         def embed = new Embed()
 
         if (loaders.contains('fabric')) {
-            def fileIDFabric = project('fabric').tasks.getByName("curseforge${project.curse_id_fabric}").property('mainArtifact').fileID
-            embed.addField('Get the fabric version here (When it is accepted)', "${project.findProperty('curse_page_fabric')}/files/${fileIDFabric}", false)
+            def fileIDFabric = project('fabric').tasks.getByName("curseforge${propertyWithFallback('curseforge_id', 'curse_id_fabric')}").property('mainArtifact').fileID
+            embed.addField('Get the fabric version here (When it is accepted)', "${propertyWithFallback('curseforge_page', 'curse_page_fabric')}/files/${fileIDFabric}", false)
             fileIDFabric = project('fabric').tasks.getByName('modrinth').property('uploadInfo').id
             embed.addField('Modrinth version (fabric)', "${project.findProperty('modrinth_page')}/version/${fileIDFabric}", false)
         }
         if (loaders.contains('forge')) {
-            def fileIDForge = project('forge').tasks.getByName("curseforge${project.curse_id_forge}").property('mainArtifact').fileID
-            embed.addField('Get the neoforge version here (When it is accepted)', "${project.findProperty('curse_page_forge')}/files/${fileIDForge}", false)
+            def fileIDForge = project('forge').tasks.getByName("curseforge${propertyWithFallback('curseforge_id', 'curse_id_forge')}").property('mainArtifact').fileID
+            embed.addField('Get the neoforge version here (When it is accepted)', "${propertyWithFallback('curseforge_page', 'curse_page_forge')}/files/${fileIDForge}", false)
             fileIDForge = project('forge').tasks.getByName('modrinth').property('uploadInfo').id
             embed.addField('Modrinth version (forge)', "${project.findProperty('modrinth_page')}/version/${fileIDForge}", false)
         }
         if (loaders.contains('neoforge')) {
-            def fileIDForge = project('neoforge').tasks.getByName("curseforge${project.curse_id_forge}").property('mainArtifact').fileID
-            embed.addField('Get the neoforge version here (When it is accepted)', "${project.findProperty('curse_page_forge')}/files/${fileIDForge}", false)
-            fileIDForge = project('neoforge').tasks.getByName('modrinth').property('uploadInfo').id
-            embed.addField('Modrinth version (neoforge)', "${project.findProperty('modrinth_page')}/version/${fileIDForge}", false)
+            def fileIDNeoForge = project('neoforge').tasks.getByName("curseforge${propertyWithFallback('curseforge_id', 'curse_id_forge')}").property('mainArtifact').fileID
+            embed.addField('Get the neoforge version here (When it is accepted)', "${propertyWithFallback('curseforge_page', 'curse_page_forge')}/files/${fileIDNeoForge}", false)
+            fileIDNeoForge = project('neoforge').tasks.getByName('modrinth').property('uploadInfo').id
+            embed.addField('Modrinth version (neoforge)', "${project.findProperty('modrinth_page')}/version/${fileIDNeoForge}", false)
         }
         def changelog = discordChangelog()
         if (changelog.size() == 1) {

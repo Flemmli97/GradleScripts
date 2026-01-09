@@ -64,13 +64,17 @@ tasks.named('sourcesJar', Jar) {
     exclude '.cache'
 }
 
+def propertyWithFallback(String name, String fallback) {
+    return project.hasProperty(name) ? project."${name}" : project."${fallback}"
+}
+
 var hasCurseforge = tasks.findByName("curseforge") != null
 if (hasCurseforge) {
     curseforge {
         apiKey = findProperty('curseApiToken') ?: '0'
         project {
-            id = "${curse_id_forge}"
-            "${curse_versions}".split(', ').each {
+            id = "${propertyWithFallback("curseforge_id", "curse_id_forge")}"
+            "${propertyWithFallback("curseforge_versions", "curse_versions")}".split(', ').each {
                 addGameVersion "${it}"
             }
             addGameVersion 'NeoForge'
@@ -87,11 +91,17 @@ if (hasCurseforge) {
                     releaseType = 'alpha'
                 }
             }
-            if (!"${curse_dep_forge}".isEmpty() || project.hasProperty('optional_curse_dep_forge')) {
+            var dependencies = propertyWithFallback('curseforge_dep_neoforge', 'curse_dep_forge')
+            if (!"${dependencies}".isEmpty() || project.hasProperty('optional_curseforge_dep_neoforge')|| project.hasProperty('optional_curse_dep_forge')) {
                 relations {
-                    if (!"${curse_dep_forge}".isEmpty()) {
-                        "${curse_dep_forge}".split(', ').each {
+                    if (!"${dependencies}".isEmpty()) {
+                        "${dependencies}".split(', ').each {
                             requiredDependency "${it}"
+                        }
+                    }
+                    if (project.hasProperty('optional_curseforge_dep_neoforge')) {
+                        "${optional_curseforge_dep_neoforge}".split(', ').each {
+                            optionalDependency "${it}"
                         }
                     }
                     if (project.hasProperty('optional_curse_dep_forge')) {
@@ -125,8 +135,9 @@ if (hasModrinth) {
         gameVersions = "${modrinth_versions}".split(', ').toList()
         loaders = ['neoforge']
         dependencies {
-            if (!"${modrinth_dep_forge}".isEmpty()) {
-                "${modrinth_dep_forge}".split(', ').each {
+            var dependencies = propertyWithFallback('modrinth_dep_neoforge', 'modrinth_dep_forge')
+            if (!"${dependencies}".isEmpty()) {
+                "${dependencies}".split(', ').each {
                     required.project "${it}"
                 }
             }
