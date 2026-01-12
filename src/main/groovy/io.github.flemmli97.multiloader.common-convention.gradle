@@ -39,7 +39,7 @@ ext {
             'neo_loader_version'   : neo_loader_version,
             'neoforge_version'     : neoforge_version,
 
-            'homepage'             : findProperty('curseforge_page') ?: findProperty('homepage') ?: '',
+            'homepage'             : findProperty('homepage') ?: findProperty('curseforge_page') ?: '',
             'sources_url'          : findProperty('sources_url') ?: '',
             'issue_tracker'        : findProperty('issue_tracker') ?: '',
             'homepage_neoforge'    : findProperty('curseforge_page_neoforge') ?: findProperty('curse_page_forge') ?: '',
