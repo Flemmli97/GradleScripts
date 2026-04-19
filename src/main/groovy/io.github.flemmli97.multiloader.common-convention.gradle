@@ -47,16 +47,6 @@ ext {
     ]
 }
 
-repositories {
-    maven {
-        name = "Parchment MC"
-        url = 'https://maven.parchmentmc.org'
-        content {
-            includeGroupAndSubgroups('org.parchmentmc')
-        }
-    }
-}
-
 sourcesJar {
     var license = rootProject.file('LICENSE')
     if (license.exists()) {

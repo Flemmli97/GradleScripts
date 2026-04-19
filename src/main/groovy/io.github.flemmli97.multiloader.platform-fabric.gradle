@@ -32,8 +32,8 @@ configurations {
     }
     // Add fabric configurations
     requiredRuntime {
-        extendsFrom modApi
-        extendsFrom modImplementation
+        extendsFrom api
+        extendsFrom implementation
         outgoing {
             // Remove the unmapped dev jar from artifacts
             it.artifacts.removeIf {
@@ -45,12 +45,8 @@ configurations {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
-    }
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modApi "net.fabricmc.fabric-api:fabric-api:${propertyWithFallback("fabric_api_version", "fabric_version")}"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    api "net.fabricmc.fabric-api:fabric-api:${propertyWithFallback("fabric_api_version", "fabric_version")}"
     compileOnly(project(':common'))
     compileOnly(project(path: ':common', configuration: 'commonDependency'))
 }
@@ -97,7 +93,7 @@ if (hasCurseforge) {
                 addGameVersion "${it}"
             }
             addGameVersion 'Fabric'
-            mainArtifact(remapJar.archiveFile) {
+            mainArtifact(jar.archiveFile) {
                 def txt = changelog(1).replace('\n-', '\n\n- ')
                 txt = txt + '\n\n' + "For past versions see: ${full_changelog}"
                 changelog = txt
@@ -141,7 +137,7 @@ if (hasModrinth) {
         token = findProperty('modrinthApiToken') ?: '0'
         projectId = "${modrinth_id}"
         versionNumber = version
-        versionName = remapJar.archiveFileName
+        versionName = jar.archiveFileName
         changelog = changelog(1) + '\n\n' + "For past versions see: ${full_changelog}"
         versionType = 'release'
         if (mod_version.contains("beta")) {
@@ -150,7 +146,7 @@ if (hasModrinth) {
         if (mod_version.contains("alpha")) {
             versionType = 'alpha'
         }
-        uploadFile = remapJar
+        uploadFile = jar
         gameVersions = "${modrinth_versions}".split(', ').toList()
         loaders = ['fabric']
         dependencies {
