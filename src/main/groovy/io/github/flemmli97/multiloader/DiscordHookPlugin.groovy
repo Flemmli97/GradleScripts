@@ -1,0 +1,117 @@
+package io.github.flemmli97.multiloader
+
+import com.diluv.schoomp.Webhook
+import com.diluv.schoomp.message.Message
+import com.diluv.schoomp.message.embed.Embed
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+
+class DiscordHookPlugin implements Plugin<Project> {
+
+    Project project
+
+    @Override
+    void apply(Project proj) {
+        this.project = proj
+        proj.extensions.extraProperties["notifications"] = []
+        proj.tasks.register("discordNotification") {
+            it.doLast {
+                discordNotif((proj.extensions.extraProperties.get("notifications") ?: []) as List<String>)
+            }
+        }
+
+        proj.subprojects {
+            afterEvaluate {
+                def uploadTask = proj.tasks.findByName("upload")
+                if (uploadTask != null) {
+                    uploadTask.finalizedBy("discordNotification")
+                }
+                def publishTask = proj.tasks.findByName("uploadAndPublish")
+                if (publishTask != null) {
+                    publishTask.finalizedBy("discordNotification")
+                }
+            }
+        }
+    }
+
+    //Splits the changelog into multiple parts if they get bigger than discords embed field size (1024)
+    List<String> discordChangelog() {
+        def changelog = Changelog.changelog(this.project, 1)
+        def res = new ArrayList()
+        if (changelog.size() < 1000) {
+            res.add(changelog)
+            return res
+        }
+        def temp = ""
+        changelog.split("\n").each {
+            it = it + "\n"
+            if ((temp.size() + it.size()) >= 1000) {
+                res.add(temp)
+                temp = it
+            } else {
+                temp += it
+            }
+        }
+        res.add(temp)
+        return res
+    }
+
+    String propertyWithFallback(String name, String fallback) {
+        return this.project.hasProperty(name) ? this.project."${name}" : this.project."${fallback}"
+    }
+
+    void discordNotif(List<String> loaders) {
+        print("Sending notifications for loaders ${loaders}")
+        if (loaders.isEmpty()) {
+            return
+        }
+        try {
+            def webhook = new Webhook(this.project.discordHook as String, "${propertyWithFallback("mod_name", "project_name")} Upload")
+
+            def message = new Message()
+            def version = propertyWithFallback("curseforge_versions", "curse_versions").split(", ")[0]
+            message.setUsername("Curseforge Release")
+            def content = "${propertyWithFallback("mod_name", "project_name")} ${this.project.mod_version} for Minecraft ${version} has been released!"
+            if (this.project.hasProperty("discord_role")) {
+                content = "<@&${this.project.discord_role}> " + content
+            }
+            message.setContent(content)
+            message.setAvatarUrl("https://cdn.discordapp.com/avatars/680540027255652407/e4b7a058b24843ae13389a9a3cc3ae8c.png?size=128")
+
+            def embed = new Embed()
+
+            if (loaders.contains("fabric")) {
+                def fileIDFabric = this.project.project("fabric").tasks.getByName("curseforge${propertyWithFallback("curseforge_id", "curseforge_id_fabric")}").property("mainArtifact").fileID
+                embed.addField("Get the fabric version here (When it is accepted)", "${propertyWithFallback("curseforge_page", "curseforge_page_fabric")}/files/${fileIDFabric}", false)
+                fileIDFabric = this.project.project("fabric").tasks.getByName("modrinth").property("uploadInfo").id
+                embed.addField("Modrinth version (fabric)", "${this.project.modrinth_page}/version/${fileIDFabric}", false)
+            }
+            if (loaders.contains("forge")) {
+                def fileIDForge = this.project.project("forge").tasks.getByName("curseforge${propertyWithFallback("curseforge_id", "curseforge_id_forge")}").property("mainArtifact").fileID
+                embed.addField("Get the neoforge version here (When it is accepted)", "${propertyWithFallback("curseforge_page", "curseforge_page_forge")}/files/${fileIDForge}", false)
+                fileIDForge = this.project.project("forge").tasks.getByName("modrinth").property("uploadInfo").id
+                embed.addField("Modrinth version (forge)", "${this.project.modrinth_page}/version/${fileIDForge}", false)
+            }
+            if (loaders.contains("neoforge")) {
+                def fileIDNeoForge = this.project.project("neoforge").tasks.getByName("curseforge${propertyWithFallback("curseforge_id", "curseforge_id_neoforge")}").property("mainArtifact").fileID
+                embed.addField("Get the neoforge version here (When it is accepted)", "${propertyWithFallback("curseforge_page", "curseforge_page_neoforge")}/files/${fileIDNeoForge}", false)
+                fileIDNeoForge = this.project.project("neoforge").tasks.getByName("modrinth").property("uploadInfo").id
+                embed.addField("Modrinth version (neoforge)", "${this.project.modrinth_page}/version/${fileIDNeoForge}", false)
+            }
+            def changelog = discordChangelog()
+            if (changelog.size() == 1) {
+                embed.addField("Change Log", "```md\n${changelog.get(0) ?: "Unavailable :("}```", false)
+            } else {
+                changelog.forEach {
+                    embed.addField("Change Log", "```md\n${it}```", false)
+                }
+            }
+            embed.setColor(0xFF8000)
+            message.addEmbed(embed)
+
+            webhook.sendMessage(message)
+        } catch (IOException e) {
+            println "Failed to push to the Discord webhook. " + e
+        }
+    }
+}
