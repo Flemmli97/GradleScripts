@@ -39,4 +39,4 @@ dependencies {
   - `optional_curse_dep_forge` props, use `optional_curseforge_dep_neoforge`
   - `modrinth_dep_forge` props, use `modrinth_dep_neoforge`
   - `optional_modrinth_dep_forge` props, use `optional_modrinth_dep_neoforge`
-- Add a forge plugin (version 1.20.1 below only. I think)
+- Add a forge plugin

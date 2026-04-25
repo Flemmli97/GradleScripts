@@ -1,12 +1,11 @@
 package io.github.flemmli97.multiloader.remapper
 
-
 import org.gradle.api.tasks.Input
 
 abstract class RemapExtension {
 
-    @Input
-    abstract String getMappingVersion();
+    @get:Input
+    abstract val mappingVersion: String
 
-    abstract void setMappingVersion(String mapping);
+    abstract fun setMappingVersion(mapping: String)
 }
