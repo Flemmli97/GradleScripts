@@ -16,7 +16,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Remaps mods in intermediary to official
+ * Remaps mods in yarn to official
  * Based on https://github.com/jaredlll08/CreateTweaker/blob/1.20.1/buildSrc/src/main/kotlin/com/blamejared/createtweaker/gradle/Remapper.kt
  */
 object Remapper {

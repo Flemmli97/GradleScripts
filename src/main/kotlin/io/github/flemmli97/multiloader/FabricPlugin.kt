@@ -6,14 +6,16 @@ import net.fabricmc.loom.util.Constants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 
 class FabricPlugin : Plugin<Project> {
+
+    val Project.sourceSets: SourceSetContainer get() = this.extensions.getByName("sourceSets") as SourceSetContainer
 
     override fun apply(project: Project) {
         fun prop(property: String, fallback: String? = null): String {
@@ -75,36 +77,30 @@ class FabricPlugin : Plugin<Project> {
                 )
             }
 
-            val commonJavaExtension = project(":common").extensions.getByType(JavaPluginExtension::class.java)
-
             tasks.withType(ProcessResources::class.java).configureEach {
-                from(commonJavaExtension.sourceSets.getByName("main").resources)
+                from(project(":common").sourceSets.getByName("main").resources)
                 exclude("**/accesstransformer.cfg")
             }
 
-            tasks.withType(JavaCompile::class.java).configureEach {
-                source(commonJavaExtension.sourceSets.getByName("main").allSource)
+            tasks.named("compileJava", JavaCompile::class.java) {
+                source(project(":common").sourceSets.getByName("main").allSource)
             }
 
             tasks.named("sourcesJar", Jar::class.java) {
-                from(commonJavaExtension.sourceSets.getByName("main").allSource)
+                from(project(":common").sourceSets.getByName("main").allSource)
                 exclude(".cache")
             }
 
             tasks.register("cleanLocalPublish") {
                 group = "publishing"
                 dependsOn(":common:clean", "clean", "publishToMavenLocal")
-                tasks.named("publishToMavenLocal") {
-                    mustRunAfter(":common:clean", "clean")
-                }
+                tasks.getByName("publishToMavenLocal").mustRunAfter(":common:clean", "clean")
             }
 
             tasks.register("cleanPublish") {
                 group = "publishing"
                 dependsOn(":common:clean", "clean", "publish")
-                tasks.named("publish") {
-                    mustRunAfter(":common:clean", "clean")
-                }
+                tasks.getByName("publish").mustRunAfter(":common:clean", "clean")
             }
 
             ModPublishingUtils.applyModPublishingPlugins(project, "fabric")
@@ -114,6 +110,7 @@ class FabricPlugin : Plugin<Project> {
                     register("mavenJava", MavenPublication::class.java) {
                         from(components.getByName("java"))
                         artifactId = prop("mod_id")
+                        suppressPomMetadataWarningsFor("runtimeElements")
                     }
                 }
             }

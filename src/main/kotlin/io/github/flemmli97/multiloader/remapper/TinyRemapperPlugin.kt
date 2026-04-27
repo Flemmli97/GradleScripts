@@ -6,6 +6,7 @@ import net.fabricmc.tinyremapper.FileSystemReference
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.plugins.JavaPlugin
 import java.io.IOException
 import java.io.UncheckedIOException
@@ -52,16 +53,63 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
         }
     }
 
+    fun isLoomPresent(): Boolean {
+        return this.project.plugins.hasPlugin("fabric-loom") || this.project.plugins.hasPlugin("net.fabricmc.fabric-loom")
+    }
+
     fun createRemapConfiguration(extension: RemapExtension, from: String) {
         val parent = this.project.configurations.findByName(from) ?: return
-        val name = parent.name.replaceFirstChar { it.uppercase() }
+        val name = from.replaceFirstChar { it.uppercase() }
         this.project.configurations.apply {
             val remapped = create("${CONFIG_PREFIX}${name}TinyRemapped")
-            parent.extendsFrom(remapped)
-            val conf = create("${CONFIG_PREFIX}${name}")
+            val config = create("${CONFIG_PREFIX}${name}")
+            applyConfigurationExtension(config, remapped, parent)
             this@TinyRemapperPlugin.project.afterEvaluate {
-                processArtifacts(extension.mappingVersion, conf, remapped)
+                processArtifacts(extension.mappingVersion, config, remapped)
             }
+        }
+    }
+
+    fun applyConfigurationExtension(config: Configuration, remappedConfig: Configuration, parent: Configuration) {
+        if (this.isLoomPresent()) {
+            // Workaround because loom resolved configurations already so can't mutate them anymore
+            when (parent.name) {
+                JavaPlugin.API_CONFIGURATION_NAME, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME -> {
+                    this.project.configurations.getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+                        .extendsFrom(remappedConfig)
+                    this.project.configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
+                        .extendsFrom(remappedConfig)
+                }
+                JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, JavaPlugin.COMPILE_ONLY_API_CONFIGURATION_NAME -> {
+                    this.project.configurations.getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+                        .extendsFrom(remappedConfig)
+                }
+                JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME -> {
+                    this.project.configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
+                        .extendsFrom(remappedConfig)
+                }
+            }
+            when (parent.name) {
+                JavaPlugin.API_CONFIGURATION_NAME -> {
+                    this.project.configurations.getByName(JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME)
+                        .extendsFrom(config)
+                }
+                JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME -> {
+                    this.project.configurations.getByName(JavaPlugin.RUNTIME_ELEMENTS_CONFIGURATION_NAME)
+                        .extendsFrom(config)
+                }
+            }
+        } else {
+            parent.extendsFrom(remappedConfig)
+        }
+    }
+
+    fun exists(artifact: ResolvedArtifact): Boolean {
+        return this.project.configurations.any { conf ->
+            if (conf.state == Configuration.State.RESOLVED) {
+               return conf.resolvedConfiguration.resolvedArtifacts.any { a -> a.moduleVersion.id.equals(artifact.moduleVersion.id.version) }
+            }
+            return false
         }
     }
 
@@ -69,7 +117,7 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
         val resolved = sourceConfig.resolvedConfiguration.resolvedArtifacts
         val artifacts = resolved.filter {
             val file = it.file.toPath()
-            return@filter file.fileName.toString().endsWith(".jar") && Files.exists(
+            return@filter !this.exists(it) && file.fileName.toString().endsWith(".jar") && Files.exists(
                 FileSystemReference.openJar(file).getPath("fabric.mod.json")
             )
         }

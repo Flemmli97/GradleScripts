@@ -83,7 +83,7 @@ class CommonPlugin : Plugin<Project> {
                 tasks.getByName("publish").mustRunAfter("clean")
             }
 
-            if ((findProperty("with_publish") ?: true) as Boolean) {
+            if ((findProperty("with_upload") ?: "true").toString().toBoolean()) {
                 tasks.register("uploadAndPublish") {
                     group = "publishing"
                     dependsOn("clean", "publish")

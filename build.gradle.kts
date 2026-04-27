@@ -58,6 +58,10 @@ tasks.compileKotlin {
     libraries.from(sourceSets.main.get().groovy.classesDirectory)
 }
 
+tasks.publish {
+    dependsOn(tasks.clean)
+}
+
 gradlePlugin {
     plugins {
         create("discordHook") {
@@ -110,8 +114,4 @@ publishing {
             }
         }
     }
-}
-
-tasks.publish {
-    dependsOn(tasks.clean)
 }

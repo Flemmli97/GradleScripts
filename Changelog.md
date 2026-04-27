@@ -29,7 +29,7 @@ dependencies {
 - Removed various deprecated props:
   - `mcversion` in mod meta files, use `minecraft_version`
   - `fabric_version` in meta and gradle props, use `fabric_api_version`
-  - `loader_version` in mod meta files, use `neo_loader_version`
+  - `loader_version` in mod meta files, use `neoforge_loader_version`
   - `curse_versions` props, use `curseforge_versions`
   - `curse_id_fabric` props, use `curseforge_id_fabric`
   - `curse_dep_fabric` props, use `curseforge_dep_fabric`

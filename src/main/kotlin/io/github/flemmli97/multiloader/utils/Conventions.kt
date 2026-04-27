@@ -7,6 +7,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.extensions.core.extra
 import org.gradle.jvm.tasks.Jar
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.util.internal.VersionNumber
 import java.io.File
@@ -45,6 +46,9 @@ object Conventions {
             }
 
             extensions.getByType(JavaPluginExtension::class.java).apply {
+                toolchain {
+                    languageVersion.set(JavaLanguageVersion.of(((findProperty("jvm") ?: "21") as String).toInt()))
+                }
                 withSourcesJar()
             }
 
@@ -64,7 +68,7 @@ object Conventions {
                 "forge_loader_version" to (findProperty("forge_loader_version") ?: ""),
                 "forge_version" to (findProperty("forge_version") ?: ""),
 
-                "neo_loader_version" to (findProperty("neo_loader_version") ?: ""),
+                "neoforge_loader_version" to (findProperty("neoforge_loader_version") ?: ""),
                 "neoforge_version" to (findProperty("neoforge_version") ?: ""),
 
                 "homepage" to (findProperty("homepage") ?: findProperty("curseforge_page") ?: ""),
