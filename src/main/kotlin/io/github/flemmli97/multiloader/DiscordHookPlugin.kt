@@ -25,9 +25,9 @@ class DiscordHookPlugin : Plugin<Project> {
         }
         project.subprojects.forEach { sub ->
             sub.afterEvaluate {
-                val uploadTask = project.tasks.findByName("upload")
+                val uploadTask = sub.tasks.findByName("upload")
                 uploadTask?.finalizedBy("discordNotification")
-                val publishTask = project.tasks.findByName("uploadAndPublish")
+                val publishTask = sub.tasks.findByName("uploadAndPublish")
                 publishTask?.finalizedBy("discordNotification")
             }
         }
