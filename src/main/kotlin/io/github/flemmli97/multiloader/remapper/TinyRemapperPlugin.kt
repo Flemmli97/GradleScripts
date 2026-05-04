@@ -6,7 +6,6 @@ import net.fabricmc.tinyremapper.FileSystemReference
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.plugins.JavaPlugin
 import java.io.IOException
 import java.io.UncheckedIOException
@@ -23,6 +22,18 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
     lateinit var project: Project
 
     val filesPath: Path get() = this.project.rootDir.toPath().resolve(".gradle").resolve("remapper")
+
+    val loomObfuscated: Boolean by lazy {
+        if (this.isLoomPresent()) {
+            try {
+                val field = this.project.extensions.getByName("loom").javaClass.getDeclaredField("disableObfuscation")
+                field.isAccessible = true
+                return@lazy field.get(this) as Boolean
+            } catch (_: NoSuchFieldException) {
+            }
+        }
+        return@lazy false
+    }
 
     val remappedModsPath: Path
         get() {
@@ -54,7 +65,7 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
     }
 
     fun isLoomPresent(): Boolean {
-        return this.project.plugins.hasPlugin("fabric-loom") || this.project.plugins.hasPlugin("net.fabricmc.fabric-loom")
+        return this.project.plugins.hasPlugin("fabric-loom")
     }
 
     fun createRemapConfiguration(extension: RemapExtension, from: String) {
@@ -104,20 +115,15 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
         }
     }
 
-    fun exists(artifact: ResolvedArtifact): Boolean {
-        return this.project.configurations.any { conf ->
-            if (conf.state == Configuration.State.RESOLVED) {
-               return conf.resolvedConfiguration.resolvedArtifacts.any { a -> a.moduleVersion.id.equals(artifact.moduleVersion.id.version) }
-            }
-            return false
-        }
-    }
-
-    fun processArtifacts(mapping: String, sourceConfig: Configuration, targetConfig: Configuration) {
+    fun processArtifacts(
+        mapping: String,
+        sourceConfig: Configuration,
+        targetConfig: Configuration
+    ) {
         val resolved = sourceConfig.resolvedConfiguration.resolvedArtifacts
         val artifacts = resolved.filter {
             val file = it.file.toPath()
-            return@filter !this.exists(it) && file.fileName.toString().endsWith(".jar") && Files.exists(
+            return@filter file.fileName.toString().endsWith(".jar") && Files.exists(
                 FileSystemReference.openJar(file).getPath("fabric.mod.json")
             )
         }
@@ -128,7 +134,7 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
             val name = it.moduleVersion.id.name
             val version = it.moduleVersion.id.version
             val classifier = it.classifier
-            info.add(ArtifactInfo(file, group, name, version, classifier))
+            info.add(ArtifactInfo(file, group, name, version, classifier, it.moduleVersion.id.group))
         }
         if (info.isEmpty()) return
         val forced = this.project.gradle.startParameter.isRefreshDependencies
@@ -160,7 +166,23 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
             }
         }
         info.forEach {
-            this.project.dependencies.add(targetConfig.name, "${it.group}:${it.name}:${it.version}${it.classifier()}")
+            this.project.dependencies.apply {
+                /**
+                 * Remapped mods have a prefix so Gradle will treat them as different dependencies
+                 * Using module replacement we can tell Gradle they are the same
+                 * This is only required if the plugin is used in a loom project since well this is for fabric dependencies
+                 */
+                if (this@TinyRemapperPlugin.loomObfuscated) {
+                    modules.module("${it.group}:${it.name}") {
+                        replacedBy("remapped.${it.originalGroup}:${it.name}", "Use looms remapping first")
+                    }
+                } else if (this@TinyRemapperPlugin.isLoomPresent()) {
+                    modules.module("${it.group}:${it.name}") {
+                        replacedBy("${it.originalGroup}:${it.name}", "Unmapped dependencies are preferred")
+                    }
+                }
+                add(targetConfig.name, "${it.group}:${it.name}:${it.version}${it.classifier()}")
+            }
         }
     }
 
@@ -186,7 +208,8 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
         val group: String,
         val name: String,
         val version: String,
-        val classifier: String?
+        val classifier: String?,
+        val originalGroup: String
     ) {
 
         fun getOutputFile(base: Path): Path {
