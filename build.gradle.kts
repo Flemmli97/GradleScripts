@@ -96,7 +96,7 @@ publishing {
         var token: String? = (project.findProperty("maven.token") ?: System.getenv("BLAZING_COOP_MAVEN_TOKEN")) as String?
         if (token != null) {
             maven {
-                uri("https://maven.blazing-coop.net/releases")
+                setUrl("https://maven.blazing-coop.net/releases")
                 credentials {
                     username = (project.findProperty("maven.user") ?: System.getenv("BLAZING_COOP_MAVEN_USER")) as String?
                     password = token
@@ -106,7 +106,7 @@ publishing {
         token = (project.findProperty("gpr.gitlab.token") ?: System.getenv("GPR_GITLAB_TOKEN")) as String?
         if (token != null) {
             maven {
-                uri("https://gitlab.com/api/v4/projects/21830712/packages/maven")
+                setUrl("https://gitlab.com/api/v4/projects/21830712/packages/maven")
                 credentials {
                     username = (project.findProperty("gpr.user") ?: System.getenv("GPR_USER")) as String?
                     password = token
