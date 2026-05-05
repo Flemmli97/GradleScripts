@@ -1,6 +1,7 @@
 package io.github.flemmli97.multiloader.utils
 
 import org.gradle.api.Project
+import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
@@ -38,6 +39,9 @@ object Conventions {
             plugins.apply("maven-publish")
 
             group = prop("maven_group")
+            extensions.getByType(BasePluginExtension::class.java).apply {
+                archivesName.set(prop("mod_id"))
+            }
             version = "${prop("minecraft_version")}-${prop("mod_version")}-${prop("name")}"
 
             tasks.withType(JavaCompile::class.java).configureEach {

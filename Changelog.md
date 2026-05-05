@@ -1,3 +1,7 @@
+2.0.1
+==========
+- Fix archivesName not set
+
 2.0.0
 ==========
 - Update to allow for 26.1
