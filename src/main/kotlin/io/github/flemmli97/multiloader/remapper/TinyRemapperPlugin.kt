@@ -91,10 +91,12 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
                     this.project.configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
                         .extendsFrom(remappedConfig)
                 }
+
                 JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, JavaPlugin.COMPILE_ONLY_API_CONFIGURATION_NAME -> {
                     this.project.configurations.getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
                         .extendsFrom(remappedConfig)
                 }
+
                 JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME -> {
                     this.project.configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
                         .extendsFrom(remappedConfig)
@@ -105,6 +107,7 @@ abstract class TinyRemapperPlugin : Plugin<Project> {
                     this.project.configurations.getByName(JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME)
                         .extendsFrom(config)
                 }
+
                 JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME -> {
                     this.project.configurations.getByName(JavaPlugin.RUNTIME_ELEMENTS_CONFIGURATION_NAME)
                         .extendsFrom(config)

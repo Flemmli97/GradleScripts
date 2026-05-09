@@ -1,3 +1,7 @@
+2.0.2
+==========
+- Fix discord hook
+
 2.0.1
 ==========
 - Fix archivesName not set
