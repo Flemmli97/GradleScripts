@@ -59,13 +59,11 @@ def discordNotif(List<String> loaders) {
 
         def message = new Message()
         def version = propertyWithFallback('curseforge_versions', 'curse_versions').split(', ')[0]
-        message.setUsername('Curseforge Release')
         def content = "${propertyWithFallback('mod_name', 'project_name')} ${project.mod_version} for Minecraft ${version} has been released!"
         if (project.hasProperty('discord_role')) {
             content = "<@&${project.discord_role}> " + content
         }
         message.setContent(content)
-        message.setAvatarUrl('https://cdn.discordapp.com/avatars/680540027255652407/e4b7a058b24843ae13389a9a3cc3ae8c.png?size=128')
 
         def embed = new Embed()
 
