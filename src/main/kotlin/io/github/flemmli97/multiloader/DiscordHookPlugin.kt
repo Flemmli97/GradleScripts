@@ -86,7 +86,6 @@ class DiscordHookPlugin : Plugin<Project> {
 
             val message = Message()
             val version: String = propertyWithFallback("curseforge_versions", "curse_versions").split(", ")[0]
-            message.setUsername("Curseforge Release")
             var content = "${propertyWithFallback("mod_name", "project_name")} ${
                 Conventions.getProperty(
                     this.project,
@@ -100,7 +99,6 @@ class DiscordHookPlugin : Plugin<Project> {
                 content = "$content  \nThis is a dummy upload!"
             }
             message.setContent(content)
-            message.setAvatarUrl("https://cdn.discordapp.com/avatars/680540027255652407/e4b7a058b24843ae13389a9a3cc3ae8c.png?size=128")
 
             val embed = Embed()
 

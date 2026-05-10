@@ -1,3 +1,7 @@
+2.0.3
+==========
+- Remove discord hook name and avatar. Can set it via webhook in discord itself
+
 2.0.2
 ==========
 - Fix discord hook
