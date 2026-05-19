@@ -1,3 +1,7 @@
+2.0.4
+==========
+- Expose conventions as plugin
+
 2.0.3
 ==========
 - Remove discord hook name and avatar. Can set it via webhook in discord itself

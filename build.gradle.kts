@@ -68,6 +68,10 @@ gradlePlugin {
             id = "io.github.flemmli97.multiloader.discord_hook"
             implementationClass = "io.github.flemmli97.multiloader.DiscordHookPlugin"
         }
+        create("conventions") {
+            id = "io.github.flemmli97.multiloader.conventions"
+            implementationClass = "io.github.flemmli97.multiloader.ConventionsPlugin"
+        }
         create("common") {
             id = "io.github.flemmli97.multiloader.platform-common"
             implementationClass = "io.github.flemmli97.multiloader.CommonPlugin"
