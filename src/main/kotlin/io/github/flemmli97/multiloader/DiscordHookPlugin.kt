@@ -16,6 +16,10 @@ class DiscordHookPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         this.project = project
+        if (!this.project.hasProperty("discordHook")) {
+            this.project.logger.lifecycle("discordHook property not set. Ignoring DiscordHookPlugin plugin")
+            return
+        }
         project.extra["notifications"] = mutableListOf<String>()
 
         discordNotif(this.loaderProjects(), -1)

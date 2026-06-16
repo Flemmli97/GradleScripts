@@ -1,3 +1,7 @@
+2.0.5
+==========
+- Make discord plugin optional even if added
+
 2.0.4
 ==========
 - Expose conventions as plugin
