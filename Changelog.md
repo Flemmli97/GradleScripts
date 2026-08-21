@@ -1,3 +1,7 @@
+2.1.0
+==========
+- Update publishing plugins for new curseforge required fields
+
 2.0.5
 ==========
 - Make discord plugin optional even if added

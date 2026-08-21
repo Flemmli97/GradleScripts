@@ -9,10 +9,22 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.internal.extensions.core.extra
 import java.io.IOException
+import kotlin.random.Random
+
+typealias NotificationData = MutableMap<String, Map<String, String>>
 
 class DiscordHookPlugin : Plugin<Project> {
 
     lateinit var project: Project
+
+    companion object {
+
+        @Suppress("unchecked_cast")
+        fun get(project: Project): NotificationData {
+            return (project.rootProject.extra.get("notifications")
+                ?: mapOf<String, Map<String, String>>()) as NotificationData
+        }
+    }
 
     override fun apply(project: Project) {
         this.project = project
@@ -20,14 +32,14 @@ class DiscordHookPlugin : Plugin<Project> {
             this.project.logger.lifecycle("discordHook property not set. Ignoring DiscordHookPlugin plugin")
             return
         }
-        project.extra["notifications"] = mutableListOf<String>()
+        project.rootProject.extra["notifications"] = mutableMapOf<String, Map<String, String>>()
 
         discordNotif(this.loaderProjects(), -1)
 
         project.tasks.register("discordNotification") {
             doLast {
                 @Suppress("unchecked_cast")
-                discordNotif((project.extra.get("notifications") ?: listOf<String>()) as List<String>)
+                discordNotif(get(project))
             }
         }
         project.tasks.register("discordNotificationTest") {
@@ -45,8 +57,13 @@ class DiscordHookPlugin : Plugin<Project> {
         }
     }
 
-    fun loaderProjects(): List<String> {
-        return this.project.subprojects.map { p -> p.name.lowercase() }.toList()
+    fun loaderProjects(): Map<String, Map<String, String>> {
+        return this.project.subprojects.associate { p ->
+            p.name.lowercase() to mapOf(
+                "curseforge" to "${Random.nextInt()}",
+                "modrinth" to "${Random.nextInt()}"
+            )
+        }
     }
 
     fun discordChangelog(): List<String> {
@@ -74,17 +91,21 @@ class DiscordHookPlugin : Plugin<Project> {
         return (this.project.findProperty(name) ?: this.project.property(fallback)) as String
     }
 
-    fun discordNotif(loaders: List<String>, dummy: Int? = null) {
+    fun discordNotif(loaders: Map<String, Map<String, String>>, dummy: Int? = null) {
         if (dummy != -1) {
-            this.project.logger.lifecycle("Sending notifications for loaders $loaders")
+            this.project.logger.lifecycle("Sending notifications for loaders ${loaders.keys}")
         }
         if (loaders.isEmpty()) {
             return
         }
 
         try {
+            var hook = this.project.property("discordHook")
+            if (dummy == 0) {
+                hook = this.project.property("discordHookTest")
+            }
             val webhook = Webhook(
-                this.project.property("discordHook") as String,
+                "$hook",
                 propertyWithFallback("mod_name", "project_name") + " Upload"
             )
 
@@ -107,17 +128,13 @@ class DiscordHookPlugin : Plugin<Project> {
             val embed = Embed()
 
             if (loaders.contains("fabric")) {
-                val projectId = propertyWithFallback(
-                    "curseforge_id",
-                    "curseforge_id_fabric"
-                )
-                var fileIDFabric = dummy ?: getCurseForgeId("fabric", projectId)
+                var fileIDFabric = loaders["fabric"]!!["curseforge"] ?: 0
                 embed.addField(
                     "Get the fabric version here (When it is accepted)",
                     "${propertyWithFallback("curseforge_page", "curseforge_page_fabric")}/files/${fileIDFabric}",
                     false
                 )
-                fileIDFabric = dummy ?: getModrinthId("fabric")
+                fileIDFabric = loaders["fabric"]!!["modrinth"] ?: 0
                 embed.addField(
                     "Modrinth version (fabric)",
                     "${this.project.property("modrinth_page")}/version/${fileIDFabric}",
@@ -125,17 +142,13 @@ class DiscordHookPlugin : Plugin<Project> {
                 )
             }
             if (loaders.contains("forge")) {
-                val projectId = propertyWithFallback(
-                    "curseforge_id",
-                    "curseforge_id_forge"
-                )
-                var fileIDForge = dummy ?: getCurseForgeId("forge", projectId)
+                var fileIDForge = loaders["forge"]!!["curseforge"] ?: 0
                 embed.addField(
                     "Get the neoforge version here (When it is accepted)",
                     "${propertyWithFallback("curseforge_page", "curseforge_page_forge")}/files/${fileIDForge}",
                     false
                 )
-                fileIDForge = dummy ?: getModrinthId("modrinth")
+                fileIDForge = loaders["forge"]!!["modrinth"] ?: 0
                 embed.addField(
                     "Modrinth version (forge)",
                     "${this.project.property("modrinth_page")}/version/${fileIDForge}",
@@ -143,17 +156,13 @@ class DiscordHookPlugin : Plugin<Project> {
                 )
             }
             if (loaders.contains("neoforge")) {
-                val projectId = propertyWithFallback(
-                    "curseforge_id",
-                    "curseforge_id_neoforge"
-                )
-                var fileIDNeoForge = dummy ?: getCurseForgeId("neoforge", projectId)
+                var fileIDNeoForge = loaders["neoforge"]!!["curseforge"] ?: 0
                 embed.addField(
                     "Get the neoforge version here (When it is accepted)",
                     "${propertyWithFallback("curseforge_page", "curseforge_page_neoforge")}/files/${fileIDNeoForge}",
                     false
                 )
-                fileIDNeoForge = dummy ?: getModrinthId("neoforge")
+                fileIDNeoForge = loaders["neoforge"]!!["modrinth"] ?: 0
                 embed.addField(
                     "Modrinth version (neoforge)",
                     "${this.project.property("modrinth_page")}/version/${fileIDNeoForge}",
@@ -176,29 +185,5 @@ class DiscordHookPlugin : Plugin<Project> {
         } catch (e: IOException) {
             this.project.logger.error("Failed to push to the Discord webhook. $e")
         }
-    }
-
-    /**
-     * Due to kotlin verbosity using this workaround
-     */
-    fun getCurseForgeId(subProject: String, projectId: String): Any {
-        val task = this.project.project(subProject).tasks.getByName(
-            "curseforge${projectId}"
-        )
-        val artifact = task.property("mainArtifact")!!
-        val field = artifact.javaClass.getDeclaredField("fileID")
-        field.isAccessible = true
-        return field.get(artifact)
-    }
-
-    /**
-     * Due to kotlin verbosity using this workaround
-     */
-    fun getModrinthId(subProject: String): Any {
-        val task = this.project.project(subProject).tasks.getByName("modrinth")
-        val info = task.property("uploadInfo")!!
-        val field = info.javaClass.getDeclaredField("id")
-        field.isAccessible = true
-        return field.get(info)
     }
 }

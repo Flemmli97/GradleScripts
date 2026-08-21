@@ -1,6 +1,7 @@
 package io.github.flemmli97.multiloader
 
 import io.github.flemmli97.multiloader.utils.Conventions
+import io.github.flemmli97.multiloader.utils.ModPublishingUtils
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project

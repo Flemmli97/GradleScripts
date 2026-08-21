@@ -1,5 +1,4 @@
 plugins {
-    groovy
     `kotlin-dsl`
     `maven-publish`
 }
@@ -31,6 +30,7 @@ dependencies {
     // Here for compilation only with typings
     compileOnly("net.neoforged.moddev:net.neoforged.moddev.gradle.plugin:2.0.141")
     compileOnly("fabric-loom:fabric-loom.gradle.plugin:1.15-SNAPSHOT")
+    compileOnly("me.modmuss50.mod-publish-plugin:me.modmuss50.mod-publish-plugin.gradle.plugin:2.2.0")
 }
 
 tasks.withType<ProcessResources>().configureEach {
@@ -50,14 +50,6 @@ tasks.withType<Jar>().configureEach {
     }
 }
 
-tasks.compileGroovy {
-    classpath = sourceSets.main.get().compileClasspath
-}
-
-tasks.compileKotlin {
-    libraries.from(sourceSets.main.get().groovy.classesDirectory)
-}
-
 tasks.publish {
     dependsOn(tasks.clean)
 }
@@ -67,10 +59,6 @@ gradlePlugin {
         create("discordHook") {
             id = "io.github.flemmli97.multiloader.discord_hook"
             implementationClass = "io.github.flemmli97.multiloader.DiscordHookPlugin"
-        }
-        create("conventions") {
-            id = "io.github.flemmli97.multiloader.conventions"
-            implementationClass = "io.github.flemmli97.multiloader.ConventionsPlugin"
         }
         create("common") {
             id = "io.github.flemmli97.multiloader.platform-common"

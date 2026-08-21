@@ -10,7 +10,11 @@ import net.fabricmc.mappingio.tree.MemoryMappingTree
 import net.fabricmc.tinyremapper.OutputConsumerPath
 import net.fabricmc.tinyremapper.TinyRemapper
 import net.fabricmc.tinyremapper.TinyUtils
-import java.io.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.Reader
+import java.io.StringReader
+import java.io.StringWriter
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path

@@ -29,7 +29,7 @@ object Conventions {
         return project.property(property) as String
     }
 
-    fun apply(project: Project) {
+    fun apply(project: Project, localConfig: Boolean = true) {
         fun prop(property: String): String {
             return this.getProperty(project, property)
         }
@@ -140,7 +140,7 @@ object Conventions {
             }
 
             configurations.apply {
-                if (configurations.findByName(LOCAL_RUNTIME) == null) {
+                if (localConfig && configurations.findByName(LOCAL_RUNTIME) == null) {
                     // Configuration for local dependency during runtime not exposed to consumers
                     val local = create(LOCAL_RUNTIME)
                     this.named(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME) {

@@ -1,6 +1,7 @@
 package io.github.flemmli97.multiloader
 
 import io.github.flemmli97.multiloader.utils.Conventions
+import io.github.flemmli97.multiloader.utils.ModPublishingUtils
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import net.fabricmc.loom.util.Constants
 import org.gradle.api.Plugin
@@ -22,8 +23,14 @@ class FabricPlugin : Plugin<Project> {
             return Conventions.getProperty(project, property, fallback)
         }
 
-        Conventions.apply(project)
+        Conventions.apply(project, false)
         with(project) {
+            if (Conventions.hasObfuscation(project)) {
+                plugins.apply("fabric-loom")
+            } else {
+                plugins.apply("net.fabricmc.fabric-loom")
+            }
+            var ext: LoomGradleExtensionAPI? = null;
             extensions.configure(LoomGradleExtensionAPI::class.java) {
                 val aw = file("src/main/resources/${prop("mod_id")}.accesswidener")
                 if (aw.exists()) {
@@ -42,18 +49,22 @@ class FabricPlugin : Plugin<Project> {
                         server()
                     }
                 }
+                // We cant fetch it directly due to classloading things. So save this instance
+                ext = this@configure;
             }
 
             dependencies.apply {
                 this.add(Constants.Configurations.MINECRAFT, "com.mojang:minecraft:${prop("minecraft_version")}")
                 if (Conventions.hasObfuscation(project)) {
-                    @Suppress("UnstableApiUsage")
-                    this.add(
-                        Constants.Configurations.MAPPINGS,
-                        extensions.getByType(LoomGradleExtensionAPI::class.java).layered {
-                            officialMojangMappings()
-                            parchment("org.parchmentmc.data:parchment-${prop("parchment_minecraft")}:${prop("parchment_version")}@zip")
-                        })
+                    ext?.let {
+                        @Suppress("UnstableApiUsage")
+                        this.add(
+                            Constants.Configurations.MAPPINGS,
+                            it.layered {
+                                officialMojangMappings()
+                                parchment("org.parchmentmc.data:parchment-${prop("parchment_minecraft")}:${prop("parchment_version")}@zip")
+                            })
+                    }
                     this.add("modImplementation", "net.fabricmc:fabric-loader:${prop("fabric_loader_version")}")
                     this.add("modApi", "net.fabricmc.fabric-api:fabric-api:${prop("fabric_api_version")}")
                 } else {
@@ -103,7 +114,7 @@ class FabricPlugin : Plugin<Project> {
                 tasks.getByName("publish").mustRunAfter(":common:clean", "clean")
             }
 
-            ModPublishingUtils.applyModPublishingPlugins(project, "fabric")
+            ModPublishingUtils.applyModPublishingPlugins(project,"fabric", if (Conventions.hasObfuscation(project)) "remapJar" else "jar")
 
             extensions.configure(PublishingExtension::class.java) {
                 publications {

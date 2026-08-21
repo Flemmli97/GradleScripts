@@ -1,6 +1,8 @@
 package io.github.flemmli97.multiloader
 
 import io.github.flemmli97.multiloader.utils.Conventions
+import io.github.flemmli97.multiloader.utils.Conventions.getProperty
+import io.github.flemmli97.multiloader.utils.ModPublishingUtils
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -10,10 +12,15 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.language.jvm.tasks.ProcessResources
+import org.gradle.util.internal.VersionNumber
 
 class LegacyForgePlugin : Plugin<Project> {
 
     val Project.sourceSets: SourceSetContainer get() = this.extensions.getByName("sourceSets") as SourceSetContainer
+
+    fun hasObfuscation(project: Project): Boolean {
+        return VersionNumber.parse(getProperty(project, "minecraft_version")) <= VersionNumber.parse("1.20.1")
+    }
 
     override fun apply(project: Project) {
         fun prop(property: String, fallback: String? = null): String {
@@ -103,7 +110,7 @@ class LegacyForgePlugin : Plugin<Project> {
                 tasks.getByName("publish").mustRunAfter(":common:clean", "clean")
             }
 
-            ModPublishingUtils.applyModPublishingPlugins(project, "forge")
+            ModPublishingUtils.applyModPublishingPlugins(project,"forge", if (hasObfuscation(project)) "reobfJar" else "jar")
 
             extensions.configure(PublishingExtension::class.java) {
                 publications {
